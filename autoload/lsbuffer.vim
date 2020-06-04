@@ -41,7 +41,7 @@ function! s:delete(lnr) abort
             endif
             call delete(fname, 'rf')
         endif
-    elseif glob(fname)
+    elseif !empty(glob(fname))
         call delete(fname)
     else
         echohl ErrorMsg
