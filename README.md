@@ -44,8 +44,12 @@ More things to come. Stay tuned. :)
 
 - support symlinks with "\t\x00-> theSymLink" (like in previous lsbuffer implementation)
 - change vim's `:pwd` (global, local, or tab page) to lsbuffer's `b:cwd` with mappings to `:exe 'cd '..b:cwd`, `:lcd ..`, and `:tcd ..`
+- support different view options (use 'perm', 'group', 'type', and 'size' from `readdirex()` as well as full path and other path options)
+- optionally show the current path at top with NUL in front
+- optionally show "." and/or ".." at top (move cursor after when entering new directory though)
 - implement lsbuffer#last()
 - reimplement script functions as autoload functions probably (so anyone can directly call the functions as desired for scriptability)
 - more useful mappings?
 - make some commands to open files/directories that respect `<mods>`
+- find more things to add to TODO :V
 
