@@ -1,6 +1,6 @@
 # lsbuffer.vim
 
-*__NOTE__: This plugin is in the super beta stages. Use at your own risk. :P*
+*__NOTE__: This plugin is in the beta stages. Please test it out and leave an issue for features or bugs. :P*
 
 ## Usage
 
@@ -42,8 +42,12 @@ More things to come. Stay tuned. :)
 
 ## TODO
 
-- support symlinks with "\t\x00-> theSymLink" (like in previous lsbuffer implementation)
+- support symlinks with "fileName\t\x00 -> theSymLink" (like in previous lsbuffer implementation)
+    - this lets syntax color and file name to be discovered
 - change vim's `:pwd` (global, local, or tab page) to lsbuffer's `b:cwd` with mappings to `:exe 'cd '..b:cwd`, `:lcd ..`, and `:tcd ..`
+- optional `autochdir` functionality
+- implement `<plug>`s instead of blatant overwriting
+- use defaults with `hasmapto()` and `mapargs` (but DON'T break `<leader>l` -> this can cause lag!)
 - support different view options (use 'perm', 'group', 'type', and 'size' from `readdirex()` as well as full path and other path options)
 - optionally show the current path at top with NUL in front
 - optionally show "." and/or ".." at top (move cursor after when entering new directory though)
