@@ -121,7 +121,7 @@ function! lsbuffer#open(sp) abort
             call lsbuffer#ls()
         endif
     else
-        execute printf('%s %s/%s', a:sp is# 'e' ? 'edit' : (a:sp is# 'v' ? 'vertical ' : '')..'split', b:cwd, line)
+        execute join(a:sp is# 'e' ? 'edit' : a:sp..'split', fnamemodify(simplify(b:cwd..'/'..line), ':p:~:.'))
     endif
 endfunction
 
