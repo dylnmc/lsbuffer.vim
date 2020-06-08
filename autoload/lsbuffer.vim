@@ -31,31 +31,31 @@ function! s:toggleHidden()
     call lsbuffer#ls()
 endfunction
 
-function! s:delete(lnr) abort
-    let fname = fnamemodify(b:cwd..'/'..getline('.'), ':p')
-    if confirm(printf('Delete file %s?', fnameescape(fname)), "&No\n&Yes") isnot 2
+function! s:delete(fname) abort
+    if confirm(printf('Delete file %s?', fnameescape(a:fname)), "&No\n&Yes") isnot 2
         return
     endif
-    if isdirectory(fname)
-        call delete(fname, 'd')
-        if isdirectory(fname)
-            if confirm(printf('%s is a non-empty directory. Are you sure you want to delete?!', fnameescape(fname)), "&No\n&Yes") isnot 2
+    if isdirectory(a:fname)
+        call delete(a:fname, 'd')
+        if isdirectory(a:fname)
+            if confirm(printf('%s is a non-empty directory. Are you sure you want to delete?!', fnameescape(a:fname)), "&No\n&Yes") isnot 2
                 return
             endif
-            call delete(fname, 'rf')
+            call delete(a:fname, 'rf')
         endif
-    elseif !empty(glob(fname))
-        call delete(fname)
+    elseif !empty(glob(a:fname))
+        call delete(a:fname)
     else
         echohl ErrorMsg
-        echon 'No file: '..fnameescape(fname)
+        echon 'No file: '..fnameescape(a:fname)
         echohl NONE
     endif
 endfunction
 
 function! s:deleteOp(type)
-    for lnr in range(line(a:type is# 'x' ? "'<" : "'["), line(a:type is# 'x' ? "'>" : "']"))
-        call s:delete(lnr)
+    echo range(line(a:type is# 'x' ? "'<" : "'["), line(a:type is# 'x' ? "'>" : "']"))
+    for line in getline(line(a:type is# 'x' ? "'<" : "'["), line(a:type is# 'x' ? "'>" : "']"))
+        call s:delete(fnamemodify(simplify(b:cwd..'/'..line), ':p'))
     endfor
     call lsbuffer#ls()
 endfunction
@@ -68,7 +68,7 @@ function s:mkdir(p)
     call mkdir(fnamemodify(simplify(a:p =~ '^\/' ? a:p : (get(b:, 'cwd') is 0 ? getcwd() : b:cwd)..'/'..a:p), ':p'), 'p')
 endfunction
 
-function! lsbuffer#new(split=1, mods='', cwd='') abort
+function! lsbuffer#new(split=v:true, mods='', cwd='') abort
     execute join(split(a:mods) + ['noswapfile', a:split ? 'keepalt new' : 'enew'])
     let b:lslinenrs = {}
     let b:lsbufnr = s:bufnr
@@ -111,7 +111,7 @@ function! lsbuffer#ls() abort
     setlocal ro noma
 endfunction
 
-function! lsbuffer#open(split=1, mods='') abort
+function! lsbuffer#open(split=v:true, mods='') abort
     " a:sp -> 'e': edit, 'v': vert sp, '': sp
     let b:lslinenrs[substitute(b:cwd, '\/\+$', '', '')] = line('.')
     let line = getline('.')
