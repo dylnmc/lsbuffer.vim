@@ -15,30 +15,30 @@ More things to come. Stay tuned. :)
 
 ### Global Mappings
 
-| Key | Description |
-| --- | ----------- |
-| `<leader>ls` | Open new ls buffer in a new split |
-| `<leader>lS` | Open new ls buffer in current window |
-| `<leader>ll` | Open last ls buffer in a new split (not implemented) |
-| `<leader>lL` | Open last ls buffer in current window (not implemented) |
+| Key          | Description                                             |
+| ---          | -----------                                             |
+| `<leader>ls` | Open new ls buffer in a new split                       |
+| `<leader>lS` | Open new ls buffer in current window                    |
+| ~`<leader>ll`~ | Open last ls buffer in a new split (not implemented)    |
+| ~`<leader>lL`~ | Open last ls buffer in current window (not implemented) |
 
 ### Buffer Mappings
 
-| Key | Description |
-| --- | ----------- |
-| `l` | open file in current window or navigate to directory in current ls buffer |
-| `<cr>` | same as `l` |
-| `v` | open file in vertical split or navigate to directory in a new window in a **new ls buffer** |
-| `s` | like `v` but horizontal split instead |
-| `h` | go to parent directory (`../`) |
-| `r` | update ls buffer |
-| `d{motion}` | delete a range of lines, prompting once for each file and twice for each nonempty directory |
-| `{visual}d` | delete range of lines selected by `{visual}` selection like `d{motion}` |
-| `dd` | equivalent to `Vd` to delete current file or directory |
-| `c` | start issuing `:CD` command to change directory for the current ls buffer |
-| `t` | start issuing `:TOUCH` command to touch a file |
-| `D` | start issuing `:MKDIR` command to make one or more directories ('p' flag passed to `mkdir()`) |
-| `z` | toggle hidden (dot) file (dot files hidden by default) |
+| Key         | Description                                                                                   |
+| ---         | -----------                                                                                   |
+| `l`         | open file in current window or navigate to directory in current ls buffer                     |
+| `<cr>`      | same as `l`                                                                                   |
+| `v`         | open file in vertical split or navigate to directory in a new window in a **new ls buffer**   |
+| `s`         | like `v` but horizontal split instead                                                         |
+| `h`         | go to parent directory (`../`)                                                                |
+| `r`         | update ls buffer                                                                              |
+| `d{motion}` | delete a range of lines, prompting once for each file and twice for each nonempty directory   |
+| `{visual}d` | delete range of lines selected by `{visual}` selection like `d{motion}`                       |
+| `dd`        | equivalent to `Vd` to delete current file or directory                                        |
+| `c`         | start issuing `:CD` command to change directory for the current ls buffer                     |
+| `t`         | start issuing `:TOUCH` command to touch a file                                                |
+| `D`         | start issuing `:MKDIR` command to make one or more directories ('p' flag passed to `mkdir()`) |
+| `z`         | toggle hidden (dot) file (dot files hidden by default)                                        |
 
 ## TODO
 
@@ -54,6 +54,16 @@ More things to come. Stay tuned. :)
 - implement lsbuffer#last()
 - reimplement script functions as autoload functions probably (so anyone can directly call the functions as desired for scriptability)
 - more useful mappings?
-- make some commands to open files/directories that respect `<mods>`
+- allow for scattered selection (some form of marks)
+    - maybe use `+` to add a mark and `-` to remove a mark and `=` to toggle mark
+- use `<plug>`s for all default mappings and check using `hasmapto()` so user can set own bindings
+- use xdg-open on commands
+- mapping to jump to symbolic link's reference (`gl`, `g<cr>`, others?)
+- use autocmds like netrw to autoopen when editing a directory
+- implement `:BULKEDIT`
+- preview? (very difficult)
 - find more things to add to TODO :V
 
+---
+
+- ~make some commands to open files/directories that respect `<mods>`~

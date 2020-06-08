@@ -12,7 +12,10 @@ function! s:lsShow(name) abort
     return v:false
 endfunction
 
-function! s:newCwd(p)
+function! lsbuffer#newcwd(p)
+    if &ft isnot 'lsbuffer'
+        return
+    endif
     let cwd = get(b:, 'cwd', getcwd())
     let b:lslinenrs[substitute(cwd, '\/\+$', '', '')] = line('.')
     let b:cwd = simplify(a:p =~ '^\/' ? a:p : cwd..'/'..a:p)
@@ -65,22 +68,21 @@ function s:mkdir(p)
     call mkdir(fnamemodify(simplify(a:p =~ '^\/' ? a:p : (get(b:, 'cwd') is 0 ? getcwd() : b:cwd)..'/'..a:p), ':p'), 'p')
 endfunction
 
-function! lsbuffer#new(sp, ...) abort
-    " a:sp -> 'e': enew, 'v': vnew, '': new
-    execute a:sp.'new'
+function! lsbuffer#new(split=1, mods='', cwd='') abort
+    execute join(split(a:mods) + ['noswapfile', a:split ? 'keepalt new' : 'enew'])
     let b:lslinenrs = {}
     let b:lsbufnr = s:bufnr
     let s:bufnr += 1
     execute 'file LsBuffer'..s:bufnr
     setlocal bt=nofile ft=lsbuffer noswf nobk
-    call s:newCwd(a:0 ? a:1 : getcwd())
+    call lsbuffer#newcwd(empty(a:cwd) ? getcwd() : a:cwd)
     call lsbuffer#ls()
     if !get(g:, 'no_plugin_maps') && !get(b:, 'no_plugin_maps')
-        nnoremap <buffer> <nowait> <silent> l :call lsbuffer#open('e')<cr>
-        nnoremap <buffer> <nowait> <silent> <cr> :call lsbuffer#open('e')<cr>
-        nnoremap <buffer> <nowait> <silent> v :call lsbuffer#open('v')<cr>
-        nnoremap <buffer> <nowait> <silent> s :call lsbuffer#open('')<cr>
-        nnoremap <buffer> <nowait> <silent> h :call <sid>newCwd('..')<bar>call lsbuffer#ls()<cr>
+        nnoremap <buffer> <nowait> <silent> <cr> :call lsbuffer#open(v:false)<cr>
+        nnoremap <buffer> <nowait> <silent> l :call lsbuffer#open(v:false)<cr>
+        nnoremap <buffer> <nowait> <silent> v :call lsbuffer#open(v:true, 'vertical')<cr>
+        nnoremap <buffer> <nowait> <silent> s :call lsbuffer#open()<cr>
+        nnoremap <buffer> <nowait> <silent> h :call lsbuffer#newcwd('..')<bar>call lsbuffer#ls()<cr>
         nnoremap <buffer> <nowait> <silent> r :call lsbuffer#ls()<cr>
         nnoremap <buffer> <nowait> <silent> d :set opfunc=<sid>deleteOp<cr>g@
         xnoremap <buffer> <nowait> <silent> d :call <sid>deleteOp('x')<cr>
@@ -90,7 +92,7 @@ function! lsbuffer#new(sp, ...) abort
         nnoremap <buffer> <nowait>          D :MKDIR<space>
         nnoremap <buffer> <nowait> <silent> z :call <sid>toggleHidden()<cr>
 
-        command! -buffer -nargs=1 -complete=dir  -bar CD :call <sid>newCwd(<q-args>)<bar>call lsbuffer#ls()
+        command! -buffer -nargs=1 -complete=dir  -bar CD :call <sid>newcwd(<q-args>)<bar>call lsbuffer#ls()
         command! -buffer -nargs=1 -complete=file -bar TOUCH :call <sid>touch(<q-args>)<bar>call lsbuffer#ls()
         command! -buffer -nargs=1 -complete=file -bar MKDIR :call <sid>mkdir(<q-args>)<bar>call lsbuffer#ls()
     endif
@@ -109,19 +111,19 @@ function! lsbuffer#ls() abort
     setlocal ro noma
 endfunction
 
-function! lsbuffer#open(sp) abort
+function! lsbuffer#open(split=1, mods='') abort
     " a:sp -> 'e': edit, 'v': vert sp, '': sp
     let b:lslinenrs[substitute(b:cwd, '\/\+$', '', '')] = line('.')
     let line = getline('.')
     if line =~ '\/$'
-        if a:sp is 'v' || a:sp is ''
-            call lsbuffer#new(a:sp, b:cwd..'/'..line)
+        if a:split
+            call lsbuffer#new(a:split, a:mods, b:cwd..'/'..line)
         else
             let b:cwd .= '/'..line
             call lsbuffer#ls()
         endif
     else
-        execute join(a:sp is# 'e' ? 'edit' : a:sp..'split', fnamemodify(simplify(b:cwd..'/'..line), ':p:~:.'))
+        execute join(split(a:mods) + [a:split ? 'split ' : 'edit '])..fnamemodify(simplify(b:cwd..'/'..line), ':p:~:.')
     endif
 endfunction
 
