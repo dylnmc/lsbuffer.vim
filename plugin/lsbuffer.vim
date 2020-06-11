@@ -1,24 +1,61 @@
+" lsbuffer plugin
+" AUTHOR: Dylan McClure <dylnmc@gmail.com>
+" DATE:   10 Jun 2020
 
-let s:T = exists('v:true')  ? v:true  : 1
-let s:F = exists('v:false') ? v:false : 0
 
-function! s:mapadd(typ, special, map, rhs)
-    let map = mapcheck(a:map, a:typ[0])
-    if !(empty(map) || map is? '<nop>')
-        return s:T
+" :Ls/:Lsnew commands
+"
+"  .-example---------. .-desctipion--------------------------------------.
+" | :above vert Lsnew | open new lsbuffer in vertical split on left       |
+" | :2Ls              | open LsBuffer2 in current window                  |
+" | :Lsnew Downloads  | open new split lsbuffer in directory ./Downloads/ |
+"  `-----------------` `-------------------------------------------------`
+command! -count -nargs=? -complete=file Ls    call lsbuffer#new(v:false, <q-mods>, <count>, <q-args>)
+command! -count -nargs=? -complete=file Lsnew call lsbuffer#new(v:true,  <q-mods>, <count>, <q-args>)
+
+if get(g:, 'no_plugin_maps') || get(g:, 'no_lsbuffer_maps')
+    " respect g:no_plugin_maps and g:no_lsbuffer_maps
+    finish
+endif
+
+function! s:warn(...)
+    " consistent warning only if g:lsbuffer_verbosity > 0
+    if !get(g:, 'lsbuffer_verbosity')
+        return
     endif
-    execute join([a:typ..'map', a:special, a:map, a:rhs])
-    return s:F
+    echohl WarningMsg
+    echom 'Warning (LsBuffer):' join(a:000)
+    echohl NONE
 endfunction
 
-command! Ls    call lsbuffer#new(v:false, <q-mods>)
-command! Lsnew call lsbuffer#new(v:true,  <q-mods>)
+function! s:addmap(mode, special, lhs, rhs)
+    " map a:lhs to a:rhs with a:special mods in a:mode
+    "
+    "  .-arg-----. .-description-----. .-examples------------.
+    " | a:mode    | mode to map       | 'n', 'nnore'          |
+    " | a:special | special arguments | '<silent>, '<nowait>' |
+    " | a:lhs     | LHS               | '<leader>ls'          |
+    " | a:rhs     | RHS               | ':Lsnew'              |
+    "  `---------` `-----------------` `---------------------`
+    "
+    " eg, :call s:addmap('n', '<silent>', '<leader>ls', ':Lsnew')
+    let mode0 = a:mode[0]
+    let map = mapcheck(a:lhs, mode0)
+    if hasmapto(a:rhs, mode0)
+        call s:warn('Already mapped RHS:', a:rhs)
+        return
+    endif
+    if !empty(map) && map isnot? '<nop>'
+        " if 
+        call s:warn('Conflicting map LHS:', a:lhs)
+        return
+    endif
+    execute join([a:mode..'map', a:special, a:lhs, a:rhs])
+endfunction
 
-if !get(g:, 'no_plugin_maps') && !get(g:, 'no_lsbuffer_maps')
-    call s:mapadd('nnore', '<silent>', '<leader>ls', ":Lsnew<cr>")
-    call s:mapadd('nnore', '<silent>', '<leader>lv', ":vertical Lsnew<cr>")
-    call s:mapadd('nnore', '<silent>', '<leader>lS', ":Ls<cr>")
-    " call s:mapadd('nnore', '<silent>', '<leader>ll', ":call lsbuffer#last('')<cr>")
-    " call s:mapadd('nnore', '<silent>', '<leader>lL', ":call lsbuffer#last('e')<cr>")
-endif
+call s:addmap('n', '<silent>', '<leader>ls', ':Lsnew<cr>')
+call s:addmap('n', '<silent>', '<leader>lv', ':vertical Lsnew<cr>')
+call s:addmap('n', '<silent>', '<leader>lS', ':Ls<cr>')
+" call s:addmap('n', '', '<leader>ll', ':call lsbuffer#last('')<cr>')
+" call s:addmap('n', '', '<leader>lL', ':call lsbuffer#last('e')<cr>')
 
