@@ -4,21 +4,32 @@ let s:bufnr = 0
 "     let g:lsbuffer_ignores = ['^\.']
 " endif
 
+function! s:simplify(path, end=v:false)
+    let path = simplify(substitute(a:path, '^/\{2,}', '/', ''))
+    if a:end " remove any trailing forward slashes
+        let path = substitute(path,  '.\zs/\+$', '', '')
+    else     " keep only one trailing forward slash if >= 2
+        let path = substitute(path, '/\{2,}$', '/', '')
+    endif
+    return path
+endfunction
+
 function! s:savelinenr(path, next)
     if empty(a:next)
         return
     endif
-    let b:lslinenrs[substitute(simplify(a:path), '/\+$', '', '')] = fnamemodify(a:next, ':s?.\zs/\+$??:t')
+    let b:lslinenrs[s:simplify(a:path, v:true)] = fnamemodify(a:next, ':s?.\zs/\+$??:t')
 endfunction
 
 function! lsbuffer#newcwd(p)
+    echom a:p
     if &ft isnot 'lsbuffer'
         return
     endif
-    let path = substitute(a:p, '/\+$', '', '')
+    let path = expand(a:p)
     let cwd = get(b:, 'cwd', getcwd())
     call s:savelinenr(cwd, getline('.'))
-    let b:cwd = path =~ '^\/' ? path : simplify(cwd..'/'..path)
+    let b:cwd = s:simplify(path =~ '^\/' ? path : cwd..'/'..path, v:true)
     call s:savelinenr(b:cwd, cwd)
 endfunction
 
@@ -39,40 +50,50 @@ function! lsbuffer#toggleHidden()
 endfunction
 
 function! s:delete(fname) abort
-    if confirm(printf('Delete file %s?', fnameescape(a:fname)), "&No\n&Yes") isnot 2
+    let ename = fnameescape(a:fname)
+    if confirm(printf('Delete file %s?', ename), "&No\n&Yes") isnot 2
         return
     endif
     if isdirectory(a:fname)
         call delete(a:fname, 'd')
         if isdirectory(a:fname)
-            if confirm(printf('%s is a non-empty directory. Are you sure you want to delete?!', fnameescape(a:fname)), "&No\n&Yes") isnot 2
+            if confirm(printf('%s is a non-empty directory. Are you sure you want to delete?!', ename), "&No\n&Yes") isnot 2
                 return
             endif
             call delete(a:fname, 'rf')
         endif
-    elseif !empty(glob(a:fname))
+    elseif !empty(glob(ename))
         call delete(a:fname)
     else
         echohl ErrorMsg
-        echon 'No file: '..fnameescape(a:fname)
+        echon 'No file: '..ename
         echohl NONE
     endif
 endfunction
 
 function! s:deleteOp(type)
-    echo range(line(a:type is# 'x' ? "'<" : "'["), line(a:type is# 'x' ? "'>" : "']"))
+    silent execute 'lcd' b:cwd
     for line in getline(line(a:type is# 'x' ? "'<" : "'["), line(a:type is# 'x' ? "'>" : "']"))
-        call s:delete(fnamemodify(simplify(b:cwd..'/'..line), ':p'))
+        call s:delete(line)
     endfor
     call lsbuffer#ls()
+    silent cd -
 endfunction
 
-function! s:touch(p)
-    call writefile([], fnamemodify(simplify(a:p =~ '^\/' ? a:p : (get(b:, 'cwd') is 0 ? getcwd() : b:cwd)..'/'..a:p), ':p'))
+function! s:touch(...)
+    silent execute 'lcd' b:cwd
+    for f in a:000
+        " WONTFIX:::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+        " FIXME: this creates new files but doesn't touch preexisting ones
+        "      : https://github.com/vim/vim/issues/6287
+        " WONTFIX:::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+        call writefile(0z, f, 'ab')
+    endfor
+    silent cd -
 endfunction
 
 function s:mkdir(p)
-    call mkdir(fnamemodify(simplify(a:p =~ '^\/' ? a:p : (get(b:, 'cwd') is 0 ? getcwd() : b:cwd)..'/'..a:p), ':p'), 'p')
+    call mkdir(fnamemodify(s:simplify(a:p =~ '^\/' ? a:p : (get(b:, 'cwd') is 0 ? getcwd() : b:cwd)..'/'..a:p), ':p'), 'p')
 endfunction
 
 function! s:addmaps()
@@ -94,7 +115,7 @@ function! s:addmaps()
     nnoremap <buffer> <nowait>          D :Mkdir<space>
     nnoremap <buffer> <nowait>          f :FilterToggle<space>
     command! -buffer -nargs=1 -complete=dir  -bar Cd call lsbuffer#newcwd(<q-args>)<bar>call lsbuffer#ls()
-    command! -buffer -nargs=1 -complete=file -bar Touch call <sid>touch(<q-args>)<bar>call lsbuffer#ls()
+    command! -buffer -nargs=+ -complete=file -bar Touch call <sid>touch(<f-args>)<bar>call lsbuffer#ls()
     command! -buffer -nargs=1 -complete=file -bar Mkdir call <sid>mkdir(<q-args>)<bar>call lsbuffer#ls()
     command! -buffer -nargs=1                     FilterToggle call lsbuffer#togglePattern(<q-args>)<bar>call lsbuffer#ls()
 endfunction
@@ -167,7 +188,7 @@ function! lsbuffer#open(split=v:true, mods='') abort
             call lsbuffer#ls()
         endif
     else
-        execute join(split(a:mods) + [a:split ? 'split ' : 'edit '])..fnamemodify(simplify(b:cwd..'/'..line), ':p:~:.')
+        execute join(split(a:mods) + [a:split ? 'split ' : 'edit '])..fnamemodify(s:simplify(b:cwd..'/'..line), ':p:~:.')
     endif
 endfunction
 
