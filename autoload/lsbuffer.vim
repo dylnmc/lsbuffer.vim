@@ -121,9 +121,10 @@ function! s:addmaps()
 endfunction
 
 function! lsbuffer#new(split=v:true, mods='', count=0, cwd='') abort
+    let cnt = v:count ? v:count : a:count
     execute join(split(a:mods) + ['noswapfile', a:split ? 'keepalt new' : 'enew'])
-    if a:count && a:count <= s:bufnr
-        execute 'buffer LsBuffer'..s:bufnr
+    if cnt && cnt <= s:bufnr
+        execute 'buffer LsBuffer'..cnt
     else
         let b:lslinenrs = {}
         let b:lsbufnr = s:bufnr
@@ -136,7 +137,7 @@ function! lsbuffer#new(split=v:true, mods='', count=0, cwd='') abort
     endif
     call lsbuffer#newcwd(empty(a:cwd) ? getcwd() : a:cwd)
     call lsbuffer#ls()
-    if !a:count
+    if !cnt
         silent doautocmd User LsBufferNew
     endif
 endfunction

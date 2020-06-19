@@ -10,8 +10,8 @@
 " | :2Ls              | open LsBuffer2 in current window                  |
 " | :Lsnew Downloads  | open new split lsbuffer in directory ./Downloads/ |
 "  `-----------------` `-------------------------------------------------`
-command! -count -nargs=? -complete=file Ls    call lsbuffer#new(v:false, <q-mods>, <count>, <q-args>)
-command! -count -nargs=? -complete=file Lsnew call lsbuffer#new(v:true,  <q-mods>, <count>, <q-args>)
+command! -count -nargs=? -complete=file Ls    call lsbuffer#new(v:false, <q-mods>, <count>, get([<f-args>], 0, ''))
+command! -count -nargs=? -complete=file Lsnew call lsbuffer#new(v:true,  <q-mods>, <count>, get([<f-args>], 0, ''))
 
 if get(g:, 'no_plugin_maps') || get(g:, 'no_lsbuffer_maps')
     " respect g:no_plugin_maps and g:no_lsbuffer_maps
@@ -53,9 +53,9 @@ function! s:addmap(mode, special, lhs, rhs)
     execute join([a:mode..'map', a:special, a:lhs, a:rhs])
 endfunction
 
-call s:addmap('n', '<silent>', '<leader>ls', ':Lsnew<cr>')
-call s:addmap('n', '<silent>', '<leader>lv', ':vertical Lsnew<cr>')
-call s:addmap('n', '<silent>', '<leader>lS', ':Ls<cr>')
+call s:addmap('n', '<silent>', '<leader>ls', ':<c-u>Lsnew<cr>')
+call s:addmap('n', '<silent>', '<leader>lv', ':<c-u>vertical Lsnew<cr>')
+call s:addmap('n', '<silent>', '<leader>lS', ':<c-u>Ls<cr>')
 " call s:addmap('n', '', '<leader>ll', ':call lsbuffer#last('')<cr>')
 " call s:addmap('n', '', '<leader>lL', ':call lsbuffer#last('e')<cr>')
 

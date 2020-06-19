@@ -38,12 +38,13 @@ More things to come. Stay tuned. :)
 | `c`         | start issuing `:CD` command to change directory for the current ls buffer                     |
 | `t`         | start issuing `:TOUCH` command to touch a file                                                |
 | `D`         | start issuing `:MKDIR` command to make one or more directories ('p' flag passed to `mkdir()`) |
-| `z`         | toggle hidden (dot) file (dot files hidden by default)                                        |
+| `Z`         | toggle hidden (dot) file (dot files hidden by default)                                        |
 
 ## TODO
 
 - support symlinks with "fileName\t\x00 -> theSymLink" (like in previous lsbuffer implementation)
     - this lets syntax color and file name to be discovered
+- use xdg-open or global list to open files (using executable() and system())
 - change vim's `:pwd` (global, local, or tab page) to lsbuffer's `b:cwd` with mappings to `:exe 'cd '..b:cwd`, `:lcd ..`, and `:tcd ..`
 - optional `autochdir` functionality
 - implement `<plug>`s instead of blatant overwriting
