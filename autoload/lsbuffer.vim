@@ -22,7 +22,6 @@ function! s:savelinenr(path, next)
 endfunction
 
 function! lsbuffer#newcwd(p)
-    echom a:p
     if &ft isnot 'lsbuffer'
         return
     endif
@@ -156,17 +155,28 @@ function! s:keep(item) abort
     return v:true
 endfunction
 
+function! s:buildname(item)
+    let out = a:item.name
+    let type = a:item.type
+    if type is 'dir' || type is 'linkd'
+        let out ..= '/'
+    endif
+    if type is 'link' || type is 'linkd'
+        let out ..= "\t\n -> "..resolve(a:item.name)
+    endif
+    return out
+endfunction
+
 function! lsbuffer#ls() abort
     setlocal noro ma
-    silent 0put=map(readdirex(b:cwd, { e -> s:keep(e) }), { _,i -> i.name..(i.type is 'dir' \|\| i.type is 'linkd' ? '/' : '') })
     let line = getline('.')
     let cwd = substitute(get(b:, 'cwd', getcwd()), '/\+$', '', '')
     if !empty(line) && !has_key(b:lslinenrs, cwd)
         call s:savelinenr(cwd, getline('.'))
     endif
-    silent +1,$delete
-    let linenrcwd = substitute(b:cwd, '/\+$', '', '')
-    let lastpath = get(b:lslinenrs, linenrcwd)
+    silent %delete
+    call setline(1, map(readdirex(b:cwd, { e -> s:keep(e) }), { _,item -> s:buildname(item) }))
+    let lastpath = get(b:lslinenrs, substitute(b:cwd, '/\+$', '', ''))
     if !empty(lastpath)
         let lnr = search('\V\C\^'..escape(lastpath, '\')..'\>', 'ncw')
     else
@@ -174,13 +184,15 @@ function! lsbuffer#ls() abort
     endif
     call setpos('.', [0, lnr, 1, 1])
     normal! zz
-    setlocal ro noma
+    setlocal ro noma conceallevel=3 concealcursor=nvic
 endfunction
 
 function! lsbuffer#open(split=v:true, mods='') abort
-    " a:sp -> 'e': edit, 'v': vert sp, '': sp
-    call s:savelinenr(b:cwd, getline('.'))
-    let line = getline('.')
+    let line = substitute(getline('.'), '\t\?\%x00.*', '', '')
+    if empty(line)
+        return
+    endif
+    call s:savelinenr(b:cwd, line)
     if line =~ '\/$'
         if a:split
             call lsbuffer#new(a:split, a:mods, b:cwd..'/'..line)

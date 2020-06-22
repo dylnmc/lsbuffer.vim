@@ -42,8 +42,6 @@ More things to come. Stay tuned. :)
 
 ## TODO
 
-- support symlinks with "fileName\t\x00 -> theSymLink" (like in previous lsbuffer implementation)
-    - this lets syntax color and file name to be discovered
 - use xdg-open or global list to open files (using executable() and system())
 - change vim's `:pwd` (global, local, or tab page) to lsbuffer's `b:cwd` with mappings to `:exe 'cd '..b:cwd`, `:lcd ..`, and `:tcd ..`
 - optional `autochdir` functionality
@@ -68,3 +66,4 @@ More things to come. Stay tuned. :)
 ---
 
 - ~make some commands to open files/directories that respect `<mods>`~
+- ~support symlinks with "fileName\t\x00 -> theSymLink" (like in previous lsbuffer implementation)~
