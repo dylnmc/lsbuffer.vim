@@ -50,7 +50,10 @@ function! lsbuffer#newcwd(p, add=v:true) abort
     endif
 endfunction
 
-function! lsbuffer#togglePattern(pat)
+function! lsbuffer#togglePattern(pat, savlin=v:true)
+    if a:savlin
+        call s:savelinenr(b:_lsb_cwd, getline('.'))
+    endif
     if &ft isnot 'lsbuffer'
         return
     endif
@@ -60,10 +63,6 @@ function! lsbuffer#togglePattern(pat)
     else
         call remove(b:lsbuffer_ignores, ind)
     endif
-endfunction
-
-function! lsbuffer#toggleHidden()
-    call lsbuffer#togglePattern('^\.')
 endfunction
 
 function! s:delete(fname) abort
@@ -127,7 +126,7 @@ function! s:addmaps()
     nnoremap <buffer> <nowait> <silent> d :set opfunc=<sid>deleteOp<cr>g@
     xnoremap <buffer> <nowait> <silent> d :call <sid>deleteOp('x')<cr>
     nmap     <buffer> <nowait> <silent> dd Vd
-    nnoremap <buffer> <nowait> <silent> Z :call <sid>savelinenr(b:_lsb_cwd, getline('.'))<bar>call lsbuffer#toggleHidden()<bar>call lsbuffer#ls()<cr>
+    nnoremap <buffer> <nowait> <silent> Z :call lsbuffer#togglePattern('^\.')<bar>call lsbuffer#ls()<cr>
     nnoremap <buffer> <nowait> <silent> ~ :Cd ~<cr>
     nnoremap <buffer> <nowait>          aa :let b:lsbuffer_autotype = 'g'<bar>echo 'Autochdir enabled Globally'<cr>
     nnoremap <buffer> <nowait>          al :let b:lsbuffer_autotype = 'b'<bar>echo 'Autochdir enabled for Buffer'<cr>

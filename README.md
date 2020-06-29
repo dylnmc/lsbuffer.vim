@@ -51,14 +51,16 @@ More things to come. Stay tuned. :)
 | `C`         | start issuing `:Cd `                                                                        |
 | `T`         | start issuing `:Touch`                                                                      |
 | `D`         | start issuing `:Mkdir`                                                                      |
+| `F`         | start issuing `:FilterToggle`                                                               |
 
 ### Buffer Commands
 
-| Command  | Description                                               |
-|----------|-----------------------------------------------------------|
-| `:Cd`    | command to change directory for the current ls buffer     |
-| `:Touch` | create one or more empty files                            |
-| `:Mkdir` | make one or more directories (like `mkdir -p` in a shell) |
+| Command         | Description                                               | Example                                                                  |
+|-----------------|-----------------------------------------------------------|--------------------------------------------------------------------------|
+| `:Cd`           | command to change directory for the current ls buffer     | `:Cd ~/Downloads` to go to Downloads in home                             |
+| `:Touch`        | create one or more empty files                            | `:Touch foo\ 1.txt foo\ 2.txt` to touch files "foo 1.txt" and "foo2.txt" |
+| `:Mkdir`        | make one or more directories (like `mkdir -p` in a shell) | `:Mkdir dir\ 1 dir\ 2` to make directories "dir 1" and "dir 2"           |
+| `:FilterToggle` | Show/Hide patterns in lsbuffer                            | `:FilterToggle \.pdf$` to filter out any files with extension ".pdf"     |
 
 ### Autocmds
 
