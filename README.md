@@ -1,6 +1,8 @@
 # lsbuffer.vim
 
-*__NOTE__: This plugin is in the beta stages. Please test it out and leave an issue for features or bugs. :P*
+*unix only for now*
+
+*early stages; use with caution*
 
 ## Usage
 
@@ -16,54 +18,79 @@ More things to come. Stay tuned. :)
 ### Global Mappings
 
 | Key          | Description                                             |
-| ---          | -----------                                             |
-| `<leader>ls` | Open new ls buffer in a new split                       |
-| `<leader>lS` | Open new ls buffer in current window                    |
-| ~`<leader>ll`~ | Open last ls buffer in a new split (not implemented)    |
-| ~`<leader>lL`~ | Open last ls buffer in current window (not implemented) |
+|--------------|---------------------------------------------------------|
+| `<leader>ls` | Open new ls buffer in current window                    |
+| `<leader>lS` | Open new ls buffer a new split                          |
+| `<leader>ll` | Open last ls buffer in a new split (not implemented)    |
+| `<leader>lL` | Open last ls buffer in current window (not implemented) |
 
 ### Buffer Mappings
 
-| Key         | Description                                                                                   |
-| ---         | -----------                                                                                   |
-| `l`         | open file in current window or navigate to directory in current ls buffer                     |
-| `<cr>`      | same as `l`                                                                                   |
-| `v`         | open file in vertical split or navigate to directory in a new window in a **new ls buffer**   |
-| `s`         | like `v` but horizontal split instead                                                         |
-| `h`         | go to parent directory (`../`)                                                                |
-| `r`         | update ls buffer                                                                              |
-| `d{motion}` | delete a range of lines, prompting once for each file and twice for each nonempty directory   |
-| `{visual}d` | delete range of lines selected by `{visual}` selection like `d{motion}`                       |
-| `dd`        | equivalent to `Vd` to delete current file or directory                                        |
-| `c`         | start issuing `:CD` command to change directory for the current ls buffer                     |
-| `t`         | start issuing `:TOUCH` command to touch a file                                                |
-| `D`         | start issuing `:MKDIR` command to make one or more directories ('p' flag passed to `mkdir()`) |
-| `Z`         | toggle hidden (dot) file (dot files hidden by default)                                        |
+| Key         | Description                                                                                 |
+|-------------|---------------------------------------------------------------------------------------------|
+| `l`         | open file in current window or navigate to directory in current ls buffer                   |
+| `<cr>`      | same as `l`                                                                                 |
+| `v`         | open file in vertical split or navigate to directory in a new window in a **new ls buffer** |
+| `s`         | like `v` but horizontal split instead                                                       |
+| `h`         | go to parent directory (`../`)                                                              |
+| `r`         | update ls buffer                                                                            |
+| `d{motion}` | delete a range of lines, prompting once for each file and twice for each nonempty directory |
+| `{visual}d` | delete range of lines selected by `{visual}` selection like `d{motion}`                     |
+| `dd`        | equivalent to `Vd` to delete current file or directory                                      |
+| `aa`        | enable *autochdir* for global pwd (auto `:cd`)                                              |
+| `al`        | enable *autochdir* for local buffer's (buffer's) pwd (auto `:lcd`)                          |
+| `at`        | enable *autochdir* for tabpage's pwd (auto `:tcd`)                                          |
+| `ad`        | disable *autochdir*                                                                         |
+| `cc`        | change vim's *global* pwd to lsbuffer's cwd                                                 |
+| `cl`        | change vim's *local* pwd to lsbuffer's cwd                                                  |
+| `ct`        | change vim's *tabpage* pwd to lsbuffer's cwd                                                |
+| `R`         | resolve symbolic link and navigate there                                                    |
+| `gR`        | resolve symbolic link and navigate there in a **new ls buffer**                             |
+| `~`         | go to ~ or $HOME directory                                                                  |
+| `Z`         | toggle hidden (dot) file (dot files hidden by default)                                      |
+| `C`         | start issuing `:Cd `                                                                        |
+| `T`         | start issuing `:Touch`                                                                      |
+| `D`         | start issuing `:Mkdir`                                                                      |
+
+### Buffer Commands
+
+| Command  | Description                                               |
+|----------|-----------------------------------------------------------|
+| `:Cd`    | command to change directory for the current ls buffer     |
+| `:Touch` | create one or more empty files                            |
+| `:Mkdir` | make one or more directories (like `mkdir -p` in a shell) |
+
+### Autocmds
+
+| Autocmd           | Description                                                                    |
+|-------------------|--------------------------------------------------------------------------------|
+| ` LsBufferNewPre` | Just after creating a new lsbuffer but before creating any `<buffer>` mappings |
+| `LsBufferNew`     | Just after creating a new lsbuffer and after creating all `<buffer>` mappings  |
 
 ## TODO
 
-- use xdg-open or global list to open files (using executable() and system())
-- change vim's `:pwd` (global, local, or tab page) to lsbuffer's `b:cwd` with mappings to `:exe 'cd '..b:cwd`, `:lcd ..`, and `:tcd ..`
-- optional `autochdir` functionality
 - implement `<plug>`s instead of blatant overwriting
-- use defaults with `hasmapto()` and `mapargs` (but DON'T break `<leader>l` -> this can cause lag!)
 - support different view options (use 'perm', 'group', 'type', and 'size' from `readdirex()` as well as full path and other path options)
 - optionally show the current path at top with NUL in front
 - optionally show "." and/or ".." at top (move cursor after when entering new directory though)
-- implement lsbuffer#last()
 - reimplement script functions as autoload functions probably (so anyone can directly call the functions as desired for scriptability)
-- more useful mappings?
-- allow for scattered selection (some form of marks)
-    - maybe use `+` to add a mark and `-` to remove a mark and `=` to toggle mark
+- give a prefix for each line and implement "actions" with `x` to "execute" staged actions
 - use `<plug>`s for all default mappings and check using `hasmapto()` so user can set own bindings
-- use xdg-open on commands
-- mapping to jump to symbolic link's reference (`gl`, `g<cr>`, others?)
+- `l` / `<cr>` doesn't just open vim for some files -> `xdg-open` and mapping for some file extensions
+- `o` for "open with" prompt, `O` for `xdg-open`
+- `gm` and `gM` to bookmark current directory and delete bookmark (resp.)
+    - also need a way to list and :browse marked directories
+    - `g'` and `` g` `` to go to a bookmarked directory
 - use autocmds like netrw to autoopen when editing a directory
-- implement `:BULKEDIT`
-- preview? (very difficult)
+- implement `:Bulkedit`
 - find more things to add to TODO :V
 
----
+##### COMPLETED
 
 - ~make some commands to open files/directories that respect `<mods>`~
 - ~support symlinks with "fileName\t\x00 -> theSymLink" (like in previous lsbuffer implementation)~
+- ~change vim's `:pwd` (global, local, or tab page) to lsbuffer's `b:cwd` with mappings to `:exe 'cd '..b:cwd`, `:lcd ..`, and `:tcd ..`~
+- ~`autochdir` functionality~
+- ~use defaults with `hasmapto()` and `mapargs` (but DON'T break `<leader>l` -> this can cause lag!)~
+- ~implement lsbuffer#last()~
+- ~jump to symbolic link (`R`)~
