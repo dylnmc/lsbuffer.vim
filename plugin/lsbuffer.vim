@@ -1,6 +1,6 @@
 " lsbuffer plugin
 " AUTHOR: Dylan McClure <dylnnmc at gmail>
-" DATE:   28 Jun 2020
+" DATE:   28 June 2020
 
 
 " :Ls/:Lsnew commands

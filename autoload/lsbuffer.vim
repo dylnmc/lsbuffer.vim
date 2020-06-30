@@ -1,6 +1,6 @@
 " lsbuffer autoload
 " AUTHOR: Dylan McClure <dylnmc at gmail>
-" DATE:   28 Jun 2020
+" DATE:   30 June 2020
 
 let s:bufnr = 0
 
@@ -108,8 +108,10 @@ function! s:touch(...) abort
     silent cd -
 endfunction
 
-function s:mkdir(p)
-    call mkdir(fnamemodify(s:simplify(a:p =~ '^\/' ? a:p : (get(b:, '_lsb_cwd') is 0 ? getcwd() : b:_lsb_cwd)..'/'..a:p), ':p'), 'p')
+function s:mkdir(...)
+    for f in a:000
+        call mkdir(s:simplify(f =~ '^\/' ? f : (get(b:, '_lsb_cwd') is 0 ? getcwd() : b:_lsb_cwd)..'/'..f), 'p')
+    endfor
 endfunction
 
 function! s:addmaps()
@@ -126,7 +128,7 @@ function! s:addmaps()
     nnoremap <buffer> <nowait> <silent> d :set opfunc=<sid>deleteOp<cr>g@
     xnoremap <buffer> <nowait> <silent> d :call <sid>deleteOp('x')<cr>
     nmap     <buffer> <nowait> <silent> dd Vd
-    nnoremap <buffer> <nowait> <silent> Z :call lsbuffer#togglePattern('^\.')<bar>call lsbuffer#ls()<cr>
+    nnoremap <buffer> <nowait> <silent> Z :FilterToggle ^\.<cr>
     nnoremap <buffer> <nowait> <silent> ~ :Cd ~<cr>
     nnoremap <buffer> <nowait>          aa :let b:lsbuffer_autotype = 'g'<bar>echo 'Autochdir enabled Globally'<cr>
     nnoremap <buffer> <nowait>          al :let b:lsbuffer_autotype = 'b'<bar>echo 'Autochdir enabled for Buffer'<cr>
@@ -144,7 +146,7 @@ function! s:addmaps()
     nnoremap <buffer> <nowait>          F :FilterToggle<space>
     command! -buffer -nargs=1 -complete=dir  -bar Cd call lsbuffer#newcwd(<q-args>)<bar>call lsbuffer#ls()
     command! -buffer -nargs=+ -complete=file -bar Touch call <sid>touch(<f-args>)<bar>call lsbuffer#ls()
-    command! -buffer -nargs=1 -complete=file -bar Mkdir call <sid>mkdir(<q-args>)<bar>call lsbuffer#ls()
+    command! -buffer -nargs=+ -complete=file -bar Mkdir call <sid>mkdir(<f-args>)<bar>call lsbuffer#ls()
     command! -buffer -nargs=1                     FilterToggle call lsbuffer#togglePattern(<q-args>)<bar>call lsbuffer#ls()
 endfunction
 
@@ -219,6 +221,9 @@ endfunction
 
 function! lsbuffer#open(split=v:true, mods='') abort
     let line = substitute(getline('.'), '\t\?\%x00.*', '', '')
+    if empty(line)
+        return
+    endif
     call s:savelinenr(b:_lsb_cwd, line)
     if line =~ '\/$'
         if a:split

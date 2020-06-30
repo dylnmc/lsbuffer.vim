@@ -1,0 +1,446 @@
+*lsbuffer.txt*       Simple and modern file explorer for vim        *lsbuffer*
+
+    ######################################################################   ~
+  #############  ##########  _ )########/   #/   ########################### ~
+ ##############  ####/ __ #  _ \#  ##  #  ###  ###/ _ \# '   ################~
+ ##############  ####\__ \# |_) #  ##  #    #    #  __/#  ###################~
+  #############      #   /#    /#\  ,  #  ###  ###\   ##  ################## ~
+    ######################################################################   ~
+
+                               By Dylan McClure ~
+                               dylnmc at gmail  ~
+
+==============================================================================
+LsBuffer Table of Contents                                      *lsbuffer-toc*
+
+1. Intro `..........` |lsbuffer-intro|
+2. Features `.......` |lsbuffer-features|
+3. Mappings `.......` |lsbuffer-maps|
+4. Commands `.......` |lsbuffer-commands|
+5. Autocommands `...` |lsbuffer-autocmds|
+
+For Vim version 8.2.0875 and above. Last change: 30 June 2020
+
+==============================================================================
+1. Intro                                                      *lsbuffer-intro*
+
+Lsbuffer takes a new approach to file explorers in vim. Written in 100% vim
+script, this plugin hopes to achieve speed, ease of use, and functionality.
+
+One distinguishing feature from other file explorer plugins is that a lsbuffer
+can navigate to many directories without opening unlisted buffers for each new
+directory. This not only keeps your buffer list slightly clean - although it
+doesn't make much of a difference to most - but it also means that each
+lsbuffer is self contained and unique.
+
+|readdirex()| is used for speed. Thus, you must have Vim version 8.2.0875 or
+above, and no backup functions for older versions are currently implemented
+(coming soon, hopefully).
+
+Lsbuffer has a lot of features which are currently exposed via buffer-local
+mappings. See |lsbuffer-maps| to see all of the great things you can do in an
+lsbuffer! Some of the maps also call buffer-local commands. Their usages are
+described in detail in |lsbuffer-commands|.
+
+------------------------------------------------------------------------------
+                                                            *lsbuffer-typical*
+
+Here is what a typical session might look like:
+
+<leader>ls   Default mapping to |:Ls| to open new lsbuffer in this window
+D a/aa b/bb  Make directories "a/", "a/aa/", "b/", and "b/bb/"
+T a\ 1 a\ 2  Touch files "a 1" and "a 2"
+dd           Delete file or directory under cursor
+k, j         Move up, down
+l            Navigate to directory under cursor (also: open file if file)
+cc           Change vim's global |:pwd| to lsbuffer's cwd
+v            Open file under cursor in a vertical split
+
+==============================================================================
+2. Features                                                *lsbuffer-features*
+
+|lsbuffer-symbolic|    Symbolic links
+|lsbuffer-filesystem|  Modifying the file system
+|lsbuffer-autochdir|   Automatically change directory
+|lsbuffer-filtering|   Hide files with a filter
+
+------------------------------------------------------------------------------
+                                                           *lsbuffer-symbolic*
+
+If a file is a symbolic link, it will be followed by a " -> {link}"; if a
+directory is a symbolic link, it will be followed by a " -> {link}/". This is
+deduced from |readdirex()| and thus is quite fast.
+
+Using |lsbuffer_l| on a symbolic link will make lsbuffer open to the shallow
+link. Using |lsbuffer_R| or |lsbuffer_gR| will first resolve the symbolic link
+and open that.
+
+------------------------------------------------------------------------------
+                                                         *lsbuffer-filesystem*
+
+Lsbuffer supports creation and deletion of files and directories. To create a
+file, use |lsbuffer_T| or |lsbuffer_:Touch|; to create a directory, use
+|lsbuffer_D| or |lsbuffer_:Mkdir|; to delete a file, use |lsbuffer_d|.
+`:Touch` and `:Mkdir` support multiple name separated by spaces. Escape a
+space to include it in a file or directory name.
+
+------------------------------------------------------------------------------
+                                                          *lsbuffer-autochdir*
+
+When navigating to different directories, lsbuffer keeps track of the current
+working directory, or cwd, in the buffer-local variable, b:_lsb_cwd, which you
+can always view with |lsbuffer_p|. However, this does not change vim's present
+working directory, or pwd, which you can view with |:pwd|. If this is not
+desired and you want vim to change its pwd, there is a mode called autochdir
+that will automatically change vim's pwd when lsbuffer's cwd changes.
+
+In order to enable/disable autochdir, use one of the following mappings:
+
+|lsbuffer_aa|  aa   autochdir changes global pwd using |:cd|
+|lsbuffer_at|  at   autochdir changes tabpage's pwd using |:tcd|
+|lsbuffer_al|  al   autochdir changes local pwd using |:lcd|
+|lsbuffer_cd|  ad   disable autochdir
+
+Vim's pwd is important for commands like |:find|, |:grep|, etc; so, getting it
+just right is important, and autochdir in lsbuffer can help with that. If you
+don't want vim's pwd to change automatically change, it's almost just as easy
+to do manually:
+
+|lsbuffer_cc|  cc   set global pwd to lsbuffer's cwd with |:cd|
+|lsbuffer_ct|  ct   set tabpage pwd to lsbuffer's cwd with |:tcd|
+|lsbuffer_cl|  cl   set local pwd to lsbuffer's cwd with |:lcd|
+
+It's easy enough to use one, the other, or neither, so pick your poison.
+They're all easy to use!
+
+------------------------------------------------------------------------------
+                                                          *lsbuffer-filtering*
+
+If you don't want to see some of the files or directories, you can filter them
+out with regex. Using |lsbuffer_F| or the command it maps to,
+|lsbuffer_:FilterToggle|, you can easily filter out simple or complex
+patterns.
+
+For example, let's say you want to filter out all files that end with ".pdf".
+Just use something like this: >
+
+    :FilterToggle \.pdf$
+
+Lsbuffer internally makes use of this by filtering hidden files and
+directories - those that begin with a '.' - and providing the mapping
+|lsbuffer_Z| to toggle displaying hidden files. In fact, |lsbuffer_Z| performs
+the following: >
+
+    :FilterToggle ^\.
+
+==============================================================================
+3. Mappings                                                    *lsbuffer-maps*
+
+Maps that begin with <leader> are global and are only created if the left-hand
+side of the map is not taken as well as "Ls" and "Lsnew" have not been mapped
+by the user. All other maps are mapped with |:command-<buffer>|.
+
+Note: if "Ls" is found anywhere in the right-hand side of any mapping, then
+<leader>ls will not be created.
+
+Note: if "Lsnew" is found anywhere in the right-hand side of any mapping, then
+<leader>lS, <leader>lv, and <leader>lV will not be created.
+
+Note: for clarity, if you map <leader>ls (or any of the other default global
+maps) in your vimrc anywhere, then lsbuffer will not overwrite the map.
+
+Maps that begin with <leader> are used to open an lsbuffer in the current
+window or in a split. Buffer-local maps are used to navigate and do things in
+the lsbuffer and only have effect there since they are local to the buffer.
+
+                                                      *lsbuffer-maps-overview*
+|lsbuffer_<leader>ls|  <leader>ls  open lsbuffer in current window
+|lsbuffer_l|           l           open file or dir
+|lsbuffer_<cr>|        <cr>        same as l
+|lsbuffer_v|           v           open file or dir in vertical split
+|lsbuffer_s|           s           open file or dir in horizontal split
+|lsbuffer_h|           h           go to parent dir
+|lsbuffer_r|           r           reload
+|lsbuffer_d|           d           delete files and dirs
+|lsbuffer_aa|          aa          autochdir: |:cd|
+|lsbuffer_at|          at          autochdir: |:tcd|
+|lsbuffer_al|          al          autochdir: |:lcd|
+|lsbuffer_ad|          ad          disable autochdir
+|lsbuffer_cc|          cc          |:cd| to lsbuffer's pwd
+|lsbuffer_cl|          cl          |:lcd| to lsbuffer's pwd
+|lsbuffer_ct|          ct          |:tcd| to lsbuffer's pwd
+|lsbuffer_R|           R           resolve symbolic link, then open
+|lsbuffer_gR|          gR          like R but in a horizontal split
+|lsbuffer_~|           ~           :Cd ~ 
+|lsbuffer_Z|           Z           :FilterToggle ^\.
+|lsbuffer_C|           C           :Cd {unfinished}
+|lsbuffer_T|           T           :Touch {unfinished}
+|lsbuffer_D|           D           :Mkdir {unfinished}
+|lsbuffer_F|           F           :FilterToggle {unfinished}
+
+------------------------------------------------------------------------------
+                                                         *lsbuffer_<leader>ls*
+{count}<leader>ls   open lsbuffer in current window. This 
+
+                                                               *lsbuffer_<cr>*
+                                                                  *lsbuffer_l*
+l     or        Open the file or directory under cursor in the current window.
+<cr>            If it is a file, open the file as a separate buffer like with
+                |:edit|. If it is a directory, stay in the lsbuffer and change
+                lsbuffer's cwd to the directory.
+
+
+v               Open the file or directory under cursor in a vertical split.
+                If it is a file, open the file as a separate buffer like with
+                |:vsplit|. If it is a directory, open a new lsbuffer and set
+                the new lsbuffer's cwd to the directory that was under the
+                cursor.
+
+                                                                  *lsbuffer_s*
+s               Open the file or directory under cursor in a horizontal split.
+                This behaves like |lsbuffer_v| but uses a horizontal split
+                instead of a vertical split.
+
+                                                                  *lsbuffer_h*
+h               Go to parent directory - equivalent to `:Cd ..` .
+
+                                                                  *lsbuffer_r*
+r               Reevaluate directory listing and update lsbuffer.
+
+                                                                  *lsbuffer_d*
+                                                                *lsbuffer_v_d*
+d{motion}   or  Delete the range of lines defined by {motion} or {visual}
+{visual}d       selection. Prompt once to delete each file and twice for each
+                nonempty directory. Todo: instead of prompting for each file
+                and directory, make delete populate a list of actions and then
+                await "execution" of the batch of actions.
+
+                                                                 *lsbuffer_dd*
+dd              Delete current file or directory - equivalent to `Vd` to
+                delete current file or directory.
+
+                                                                 *lsbuffer_aa*
+aa              Enable autochdir for global pwd (auto |:cd|).
+
+                                                                 *lsbuffer_at*
+at              Enable autochdir for tabpage's pwd (auto |:tcd|).
+
+                                                                 *lsbuffer_al*
+al              Enable autochdir for local buffer's pwd (auto |:lcd|).
+
+                                                                 *lsbuffer_ad*
+ad              Disable autochdir.
+
+                                                                 *lsbuffer_cc*
+cc              Change vim's global pwd to lsbuffer's cwd
+
+                                                                 *lsbuffer_cl*
+cl              Change vim's local pwd to lsbuffer's cwd
+
+                                                                 *lsbuffer_ct*
+ct              Change vim's tabpage pwd to lsbuffer's cwd
+
+                                                                  *lsbuffer_R*
+R               Resolve symbolic link and open
+
+                                                                 *lsbuffer_gR*
+gR              Resolve symbolic link and open in a new split
+
+                                                                  *lsbuffer_~*
+~               Go to ~ or $HOME directory
+
+                                                                  *lsbuffer_Z*
+Z               Toggle hidden (dot) file (dot files hidden by default)
+
+                                                                  *lsbuffer_C*
+C               Start issuing |lsbuffer_:Cd|; await user input and navigate to
+                the specified directory after pressing <cr>.
+
+                                                                  *lsbuffer_T*
+T               Start issuing |lsbuffer_:Touch|; await user input and touch
+                specified files after pressing <cr>.
+
+                                                                  *lsbuffer_D*
+D               Start issuing |:lsbuffer_Mkdir|; await user input and make all
+                specified directories after pressing <cr>.
+
+                                                                  *lsbuffer_F*
+F               Start issuing |:lsbuffer_FilterToggle|; await user input and
+                toggle a filter containing regex that will hide files based on
+                their name. This is crude, but it will have to make do for
+                now.
+
+==============================================================================
+4. Commands                                                *lsbuffer-commands*
+
+:Ls and :Lsnew are the only two global commands. Calling one of them opens a
+lsbuffer in the current window or a new split (resp.). All of the other
+commands - like :Cd, :Touch, :Mkdir, etc - are buffer-local and are only valid
+inside of a lsbuffer. All of the buffer-local commands have mappings to them
+for ease of use.
+
+                                                  *lsbuffer-commands-overview*
+
+|lsbuffer_:Ls|            :Ls                  Open LsBuffer in current window
+|lsbuffer_:Lsnew|         :Lsnew               Open LsBuffer in split window
+|lsbuffer_:Cd|            :Cd {dir}            Change lsbuffer's to {dir}
+|lsbuffer_:Touch|         :Touch {files}       Touch {files}
+|lsbuffer_:Mkdir|         :Mkdir {dirs}        Mkdir -p {files}
+|lsbuffer_:FilterToggle|  :FilterToggle {pat}  Toggle filter on {pat}
+
+------------------------------------------------------------------------------
+                                                                *lsbuffer_:Ls*
+:Ls [dir]               Open a new lsbuffer in the current window with the
+                        lsbuffer's cwd set to [dir]. If [dir] is not passed,
+                        then vim's current pwd is obtained from |getcwd()|.
+                        [dir] will be expanded with |expand()|; therefore,
+                        variables, environment variables, and globs matching
+                        directories will be expanded.
+
+                                                          *lsbuffer_:Ls-count*
+
+:[count]Ls [dir]        If [count] is specified and is less than or equal to
+                        the highest LsBuffer{num}, then LsBuffer[count] is
+                        opened with |:buffer| in the current window. If
+                        [count] is larger than the highest lsbuffer or is
+                        zero, then a new lsbuffer is opened just like
+                        |lsbuffer_:Ls|. [dir] is handle the same as above.
+
+                        For example, if {count} is 2 and LsBuffer1 through
+                        LsBuffer4 have been opened, then LsBuffer2 will be
+                        opened in the current window. This is equivalent to
+                        `:buffer LsBuffer2` .
+
+                                                             *lsbuffer-:Lsnew*
+:{mods} Lsnew [dir]     Open a new lsbuffer in a new split window with the
+                        lsbuffer's cwd set to [dir]. If [dir] is not passed,
+                        the vim's current pwd is obtained from |getcwd()|.
+                        [dir] will be expanded with |expand()|; therefore,
+                        variables, environment variables, and globs matching
+                        directories will be expanded.
+
+                        Since :Lsnew opens a split, it can accept any
+                        |:command-modifiers| to alter the orientation and
+                        position of the split. For example,
+
+                            :botright vertical Lsnew
+
+                        opens a new lsbuffer in a vertical split on the right.
+
+                                                       *lsbuffer-:Lsnew-count*
+:{mods} [count]Lsnew [dir]
+                        This behaves exactly like |lsbuffer_:Ls-count| but it
+                        opens a new split.
+
+                                                                *lsbuffer_:Cd*
+:Cd {dir}               Change lsbuffer's cwd to {dir}. Variables, environment
+                        variables, and globs like `*` and `?` are expanded
+                        (via |expand()|). Therefore, the following,
+
+                            :Cd $HOME/?esktop/
+
+                        will most likely be evaluated to
+                        `:Cd /home/$USER/Desktop/` on UNIX where `$USER` is
+                        the current user's username.
+
+                        When a lsbuffer is opened, C is mapped to :Cd<space>
+                        for convenience; see |lsbuffer_C|.
+
+                                                             *lsbuffer_:Touch*
+:Touch {files}          Touch one or more {files}. One or more spaces separate
+                        files; to include a space or backslash, escape it with
+                        a backslash. For example,
+
+                            :Touch foo\ bar qux\\ baz
+
+                        will touch three files: "foo bar", "qux\", and "baz".
+
+                        Globs are also handled properly but only have
+                        significance for directories. If there are a few
+                        directories in the current directory, then
+
+                            :Touch */foo
+
+                        should touch "foo" in all of the directories.
+
+                        When a lsbuffer is opened, T is mapped to
+                        :Touch<space> for convenience; see |lsbuffer_T|.
+
+                                                             *lsbuffer_:Mkdir*
+:Mkdir {dirs}           Like :Touch but create {dirs} instead like mkdir -p.
+                        Just like above,
+
+                            :Mkdir foo\ bar qux\\ baz
+
+                        will create three dirs: "foo bar", "qux\", and "baz".
+
+                        Globs are handled as in :Touch.
+
+                        By default, M is mapped to :Mkdir<space>; see
+                        |lsbuffer_M|.
+
+                                                      *lsbuffer_:FilterToggle*
+:FilterToggle {pat}     Quickly toggle regex patterns that hide files and
+                        directories using regex. {pat} is a regular expression
+                        that is matched against the file names (just the last
+                        part of the path). For example,
+
+                            :FilterToggle \.\%(pdf\|asm\)$
+
+                        will filter any files ending in ".pdf" or ".asm", and
+
+                            :FilterToggle /$
+
+                        will filter any directories.
+
+                        By defailt, T is mapped to :FilterToggle<space>; see
+                        |lsbuffer_T|.
+
+
+==============================================================================
+5. Autocommands                                            *lsbuffer-autocmds*
+
+                                                              *LsBufferNewPre*
+An autocmd called after creating a new lsbuffer but before creating any
+<buffer> mappings. The user can hook into it using the following:
+
+    autocmd User LsBufferNewPre {command}
+
+                                                                 *LsBufferNew*
+An autocmd called after creating a new lsbuffer and after creating all
+<buffer> mappings. The user can hook into like:
+
+    autocmd User LsBufferNew {command}
+
+==============================================================================
+                                                         *lsbuffer-smile-more*
+                            oooo$$$$$$$$$$$$oooo                             ~
+                        oo$$$$$$$$$$$$$$$$$$$$$$$$o                          ~
+                     oo$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$o         o$   $$ o$    ~
+     o $ oo        o$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$o       $$ $$ $$o$   ~
+  oo $ $ "$      o$$$$$$$$$    $$$$$$$$$$$$$    $$$$$$$$$o       $$$o$$o$    ~
+  "$$$$$$o$     o$$$$$$$$$      $$$$$$$$$$$      $$$$$$$$$$o    $$$$$$$$     ~
+    $$$$$$$    $$$$$$$$$$$      $$$$$$$$$$$      $$$$$$$$$$$$$$$$$$$$$$$     ~
+    $$$$$$$$$$$$$$$$$$$$$$$    $$$$$$$$$$$$$    $$$$$$$$$$$$$$  """$$$       ~
+     "$$$""""$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$     "$$$      ~
+      $$$   o$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$     "$$$o    ~
+     o$$"   $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$       $$$o   ~
+     $$$    $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$" "$$$$$$ooooo$$$$o ~
+    o$$$oooo$$$$$  $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$   o$$$$$$$$$$$$$$$$$~
+    $$$$$$$$"$$$$   $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$     $$$$""""""""      ~
+   """"       $$$$    "$$$$$$$$$$$$$$$$$$$$$$$$$$$$"      o$$$               ~
+              "$$$o     """$$$$$$$$$$$$$$$$$$"$$"         $$$                ~
+                $$$o          "$$""$$$$$$""""           o$$$                 ~
+                 $$$$o                                o$$$"                  ~
+                  "$$$$o      o$$$$$$o"$$$$o        o$$$$                    ~
+                    "$$$$$oo     ""$$$$o$$$$$o   o$$$$""                     ~
+                       ""$$$$$oooo  "$$$o$$$$$$$$$"""                        ~
+                          ""$$$$$$$oo $$$$$$$$$$                             ~
+                                  """"$$$$$$$$$$$                            ~
+                                      $$$$$$$$$$$$                           ~
+                                       $$$$$$$$$$"                           ~
+                                        "$$$""""                             ~
+
+Don't forget to type |:smile| at least once a month. >
+
+                                            vim: set tw=78 et ft=help norl ai:
