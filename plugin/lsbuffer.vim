@@ -1,6 +1,6 @@
 " lsbuffer plugin
 " AUTHOR: Dylan McClure <dylnnmc at gmail>
-" DATE:   28 June 2020
+" DATE:   30 June 2020
 
 
 " :Ls/:Lsnew commands
@@ -32,7 +32,7 @@ function! s:warn(...)
     echohl NONE
 endfunction
 
-if hasmapto('Ls') || hasmapto('Lsnew')
+if hasmapto('Ls', 'n')
     call s:warn('Already mapped :Ls or :Lsnew')
     finish
 endif

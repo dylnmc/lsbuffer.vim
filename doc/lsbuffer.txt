@@ -96,19 +96,19 @@ that will automatically change vim's pwd when lsbuffer's cwd changes.
 
 In order to enable/disable autochdir, use one of the following mappings:
 
-|lsbuffer_aa|  aa   autochdir changes global pwd using |:cd|
-|lsbuffer_at|  at   autochdir changes tabpage's pwd using |:tcd|
-|lsbuffer_al|  al   autochdir changes local pwd using |:lcd|
-|lsbuffer_cd|  ad   disable autochdir
+    |lsbuffer_aa|  aa   autochdir changes global pwd using |:cd|
+    |lsbuffer_at|  at   autochdir changes tabpage's pwd using |:tcd|
+    |lsbuffer_al|  al   autochdir changes local pwd using |:lcd|
+    |lsbuffer_cd|  ad   disable autochdir
 
 Vim's pwd is important for commands like |:find|, |:grep|, etc; so, getting it
 just right is important, and autochdir in lsbuffer can help with that. If you
 don't want vim's pwd to change automatically change, it's almost just as easy
 to do manually:
 
-|lsbuffer_cc|  cc   set global pwd to lsbuffer's cwd with |:cd|
-|lsbuffer_ct|  ct   set tabpage pwd to lsbuffer's cwd with |:tcd|
-|lsbuffer_cl|  cl   set local pwd to lsbuffer's cwd with |:lcd|
+    |lsbuffer_cc|  cc   set global pwd to lsbuffer's cwd with |:cd|
+    |lsbuffer_ct|  ct   set tabpage pwd to lsbuffer's cwd with |:tcd|
+    |lsbuffer_cl|  cl   set local pwd to lsbuffer's cwd with |:lcd|
 
 It's easy enough to use one, the other, or neither, so pick your poison.
 They're all easy to use!
@@ -137,14 +137,14 @@ the following: >
 3. Mappings                                                    *lsbuffer-maps*
 
 Maps that begin with <leader> are global and are only created if the left-hand
-side of the map is not taken as well as "Ls" and "Lsnew" have not been mapped
-by the user. All other maps are mapped with |:command-<buffer>|.
+side (LHS) of the map is not taken as well as "Ls" and "Lsnew" have not been
+mapped by the user. All other maps are mapped with |:command-<buffer>|.
 
-Note: if "Ls" is found anywhere in the right-hand side of any mapping, then
-<leader>ls will not be created.
+Note: if "Ls" is found anywhere in the right-hand side (RHS) of any mapping,
+then <leader>ls will not be created.
 
-Note: if "Lsnew" is found anywhere in the right-hand side of any mapping, then
-<leader>lS, <leader>lv, and <leader>lV will not be created.
+Note: if "Lsnew" is found anywhere in the RHS of any mapping, then <leader>lS,
+<leader>lv, and <leader>lV will not be created.
 
 Note: for clarity, if you map <leader>ls (or any of the other default global
 maps) in your vimrc anywhere, then lsbuffer will not overwrite the map.
@@ -154,33 +154,80 @@ window or in a split. Buffer-local maps are used to navigate and do things in
 the lsbuffer and only have effect there since they are local to the buffer.
 
                                                       *lsbuffer-maps-overview*
-|lsbuffer_<leader>ls|  <leader>ls  open lsbuffer in current window
-|lsbuffer_l|           l           open file or dir
-|lsbuffer_<cr>|        <cr>        same as l
-|lsbuffer_v|           v           open file or dir in vertical split
-|lsbuffer_s|           s           open file or dir in horizontal split
-|lsbuffer_h|           h           go to parent dir
-|lsbuffer_r|           r           reload
-|lsbuffer_d|           d           delete files and dirs
-|lsbuffer_aa|          aa          autochdir: |:cd|
-|lsbuffer_at|          at          autochdir: |:tcd|
-|lsbuffer_al|          al          autochdir: |:lcd|
-|lsbuffer_ad|          ad          disable autochdir
-|lsbuffer_cc|          cc          |:cd| to lsbuffer's pwd
-|lsbuffer_cl|          cl          |:lcd| to lsbuffer's pwd
-|lsbuffer_ct|          ct          |:tcd| to lsbuffer's pwd
-|lsbuffer_R|           R           resolve symbolic link, then open
-|lsbuffer_gR|          gR          like R but in a horizontal split
-|lsbuffer_~|           ~           :Cd ~ 
-|lsbuffer_Z|           Z           :FilterToggle ^\.
-|lsbuffer_C|           C           :Cd {unfinished}
-|lsbuffer_T|           T           :Touch {unfinished}
-|lsbuffer_D|           D           :Mkdir {unfinished}
-|lsbuffer_F|           F           :FilterToggle {unfinished}
+    |lsbuffer_<leader>ls|  <leader>ls  open lsbuffer in current window
+    |lsbuffer_<leader>lS|  <leader>lS  open lsbuffer in horizontal split
+    |lsbuffer_<leader>lv|  <leader>lv  open lsbuffer in vertical split
+    |lsbuffer_<leader>ll|  <leader>ll  open last lsbuffer in current
+    |lsbuffer_<leader>lL|  <leader>lL  open last lsbuffer in horizontal split
+    |lsbuffer_l|           l           open file or dir
+    |lsbuffer_<cr>|        <cr>        same as l
+    |lsbuffer_v|           v           open file or dir in vertical split
+    |lsbuffer_s|           s           open file or dir in horizontal split
+    |lsbuffer_h|           h           go to parent dir
+    |lsbuffer_r|           r           reload
+    |lsbuffer_d|           d           delete files and dirs
+    |lsbuffer_aa|          aa          autochdir: |:cd|
+    |lsbuffer_at|          at          autochdir: |:tcd|
+    |lsbuffer_al|          al          autochdir: |:lcd|
+    |lsbuffer_ad|          ad          disable autochdir
+    |lsbuffer_cc|          cc          |:cd| to lsbuffer's pwd
+    |lsbuffer_cl|          cl          |:lcd| to lsbuffer's pwd
+    |lsbuffer_ct|          ct          |:tcd| to lsbuffer's pwd
+    |lsbuffer_R|           R           resolve symbolic link, then open
+    |lsbuffer_gR|          gR          like R but in a horizontal split
+    |lsbuffer_~|           ~           :Cd ~ 
+    |lsbuffer_Z|           Z           :FilterToggle ^\.
+    |lsbuffer_C|           C           :Cd {unfinished}
+    |lsbuffer_T|           T           :Touch {unfinished}
+    |lsbuffer_D|           D           :Mkdir {unfinished}
+    |lsbuffer_F|           F           :FilterToggle {unfinished}
 
 ------------------------------------------------------------------------------
                                                          *lsbuffer_<leader>ls*
-{count}<leader>ls   open lsbuffer in current window. This 
+{count}<leader>ls   Open lsbuffer in current window. This calls |lsbuffer-:Ls|
+                    but {pwd} cannot be specified. {count} is forwarded to the
+                    function that is called by `:Ls`. Thereofre, 2<leader>ls
+                    will behave like `:2Ls`.
+
+                    This mapping is global and is only created if:
+                        a) <leader>ls is not already mapped
+                        b) "Ls" is not part of any RHS for any normal map
+
+                                                         *lsbuffer_<leader>lS*
+{count}<leader>lS   This works exactly like |lsbuffer_<leader>ls| but it uses
+                    `:Lsnew` and opens the lsbuffer in a horizontal split.
+
+                    This mapping is global and is only created if:
+                        a) <leader>lS is not already mapped
+                        b) "Ls" is not part of any RHS for any normal map
+
+                                                          *lsbuffer_<leader>v*
+{count}<leader>lv   This works exactly like |lsbuffer_<leader>lv| but it opens
+                    lsbuffer in a vertical split.
+
+                    This mapping is global and is only created if:
+                        a) <leader>lv is not already mapped
+                        b) "Ls" is not part of any RHS for any normal map
+
+                                                          *lsbuffer_<leader>l*
+{count}<leader>ll   This finds the last lsbuffer that was opened or whose cwd
+                    was last changed. This lsbuffer is opened in the current
+                    window.
+
+                    If no lsbuffer has been created yet, open the new
+                    lsbuffer, LsBuffer1.
+
+                    This mapping is global and is only created if:
+                        a) <leader>lv is not already mapped
+                        b) "Ls" is not part of any RHS for any normal map
+
+                                                          *lsbuffer_<leader>L*
+{count}<leader>lL   This works exactly like |lsbuffer_<leader>ll| but it opens
+                    lsbuffer in a horizontal split.
+
+                    This mapping is global and is only created if:
+                        a) <leader>lv is not already mapped
+                        b) "Ls" is not part of any RHS for any normal map
 
                                                                *lsbuffer_<cr>*
                                                                   *lsbuffer_l*
@@ -323,7 +370,7 @@ for ease of use.
                         |:command-modifiers| to alter the orientation and
                         position of the split. For example,
 
-                            :botright vertical Lsnew
+                            `:botright vertical Lsnew`
 
                         opens a new lsbuffer in a vertical split on the right.
 
@@ -337,7 +384,7 @@ for ease of use.
                         variables, and globs like `*` and `?` are expanded
                         (via |expand()|). Therefore, the following,
 
-                            :Cd $HOME/?esktop/
+                            `:Cd $HOME/?esktop/`
 
                         will most likely be evaluated to
                         `:Cd /home/$USER/Desktop/` on UNIX where `$USER` is
@@ -351,7 +398,7 @@ for ease of use.
                         files; to include a space or backslash, escape it with
                         a backslash. For example,
 
-                            :Touch foo\ bar qux\\ baz
+                            `:Touch foo\ bar qux\\ baz`
 
                         will touch three files: "foo bar", "qux\", and "baz".
 
@@ -359,7 +406,7 @@ for ease of use.
                         significance for directories. If there are a few
                         directories in the current directory, then
 
-                            :Touch */foo
+                            `:Touch */foo`
 
                         should touch "foo" in all of the directories.
 
@@ -370,7 +417,7 @@ for ease of use.
 :Mkdir {dirs}           Like :Touch but create {dirs} instead like mkdir -p.
                         Just like above,
 
-                            :Mkdir foo\ bar qux\\ baz
+                            `:Mkdir foo\ bar qux\\ baz`
 
                         will create three dirs: "foo bar", "qux\", and "baz".
 
@@ -385,11 +432,11 @@ for ease of use.
                         that is matched against the file names (just the last
                         part of the path). For example,
 
-                            :FilterToggle \.\%(pdf\|asm\)$
+                            `:FilterToggle \.\%(pdf\|asm\)$`
 
                         will filter any files ending in ".pdf" or ".asm", and
 
-                            :FilterToggle /$
+                            `:FilterToggle /$`
 
                         will filter any directories.
 
