@@ -34,6 +34,7 @@ More things to come. Stay tuned. :)
 | `s`         | like `v` but horizontal split instead                                                       |
 | `h`         | go to parent directory (`../`)                                                              |
 | `r`         | update ls buffer                                                                            |
+| `o`         | open file under cursor with an external program (use `xdg-open` if empty)                   |
 | `d{motion}` | delete a range of lines, prompting once for each file and twice for each nonempty directory |
 | `{visual}d` | delete range of lines selected by `{visual}` selection like `d{motion}`                     |
 | `dd`        | equivalent to `Vd` to delete current file or directory                                      |

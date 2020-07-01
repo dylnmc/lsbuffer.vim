@@ -1,6 +1,6 @@
 " lsbuffer autoload
 " AUTHOR: Dylan McClure <dylnmc at gmail>
-" DATE:   30 June 2020
+" DATE:   01 July 2020
 
 let s:bufnr = 0
 
@@ -21,7 +21,7 @@ function! s:savelinenr(path, next)
     let b:_lsb_lastnames[s:simplify(a:path, v:true)] = fnamemodify(a:next, ':s?.\zs/\+$??:t')
 endfunction
 
-function! lsbuffer#newcwd(p, add=v:true) abort
+function! lsbuffer#newcwd(p='~', add=v:true) abort
     if &ft isnot 'lsbuffer'
         return
     endif
@@ -40,12 +40,12 @@ function! lsbuffer#newcwd(p, add=v:true) abort
     endif
     let b:_lsb_cwd = s:simplify(path =~ '^\/' ? path : cwd..'/'..path, v:true)
     call s:savelinenr(b:_lsb_cwd, cwd)
-    let autotype = get(b:, 'lsbuffer_autotype')
-    if autotype[:0] is 'g'
+    let autotype = get(b:, 'lsbuffer_autotype')[:0]
+    if autotype is 'g'
         execute 'cd '..b:_lsb_cwd
-    elseif autotype[:0] is 'l'
+    elseif autotype is 'l'
         execute 'lcd '..b:_lsb_cwd
-    elseif autotype[:0] is 't'
+    elseif autotype is 't'
         execute 'tcd '..b:_lsb_cwd
     endif
 endfunction
@@ -63,6 +63,17 @@ function! lsbuffer#togglePattern(pat, savlin=v:true)
     else
         call remove(b:lsbuffer_ignores, ind)
     endif
+endfunction
+
+function! lsbuffer#openwith()
+    silent execute 'lcd' b:_lsb_cwd
+    let line = substitute(getline('.'), '\t\?\%x00.*', '', '')
+    let prg = substitute(input('open with: ', '', 'shellcmd'), '^\s\+\|\s\+$', '', 'g')
+    if empty(prg)
+        let prg = 'xdg-open'
+    endif
+    silent call system(prg..' '..line)
+    silent cd -
 endfunction
 
 function! s:delete(fname) abort
@@ -125,6 +136,7 @@ function! s:addmaps()
     nnoremap <buffer> <nowait> <silent> s :call lsbuffer#open()<cr>
     nnoremap <buffer> <nowait> <silent> h :call lsbuffer#newcwd('..')<bar>call lsbuffer#ls()<cr>
     nnoremap <buffer> <nowait> <silent> r :call lsbuffer#ls()<cr>
+    nnoremap <buffer> <nowait> <silent> o :call lsbuffer#openwith()<cr>
     nnoremap <buffer> <nowait> <silent> d :set opfunc=<sid>deleteOp<cr>g@
     xnoremap <buffer> <nowait> <silent> d :call <sid>deleteOp('x')<cr>
     nmap     <buffer> <nowait> <silent> dd Vd
@@ -144,7 +156,7 @@ function! s:addmaps()
     nnoremap <buffer> <nowait>          T :Touch<space>
     nnoremap <buffer> <nowait>          D :Mkdir<space>
     nnoremap <buffer> <nowait>          F :FilterToggle<space>
-    command! -buffer -nargs=1 -complete=dir  -bar Cd call lsbuffer#newcwd(<q-args>)<bar>call lsbuffer#ls()
+    command! -buffer -nargs=? -complete=dir  -bar Cd call lsbuffer#newcwd(<f-args>)<bar>call lsbuffer#ls()
     command! -buffer -nargs=+ -complete=file -bar Touch call <sid>touch(<f-args>)<bar>call lsbuffer#ls()
     command! -buffer -nargs=+ -complete=file -bar Mkdir call <sid>mkdir(<f-args>)<bar>call lsbuffer#ls()
     command! -buffer -nargs=1                     FilterToggle call lsbuffer#togglePattern(<q-args>)<bar>call lsbuffer#ls()
@@ -201,7 +213,7 @@ function! lsbuffer#ls() abort
     let line = getline('.')
     let cwd = substitute(get(b:, '_lsb_cwd', getcwd()), '/\+$', '', '')
     if !empty(line) && !has_key(b:_lsb_lastnames, cwd)
-        call s:savelinenr(cwd, getline('.'))
+        call s:savelinenr(cwd, line)
     endif
     silent %delete
     call setline(1, map(readdirex(b:_lsb_cwd, { e -> s:keep(e) }), { _,item -> s:buildname(item) }))

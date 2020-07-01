@@ -19,7 +19,7 @@ LsBuffer Table of Contents                                      *lsbuffer-toc*
 4. Commands `.......` |lsbuffer-commands|
 5. Autocommands `...` |lsbuffer-autocmds|
 
-For Vim version 8.2.0875 and above. Last change: 30 June 2020
+For Vim version 8.2.0875 and above. Last change: 01 July 2020
 
 ==============================================================================
 1. Intro                                                      *lsbuffer-intro*
@@ -165,6 +165,7 @@ the lsbuffer and only have effect there since they are local to the buffer.
     |lsbuffer_s|           s           open file or dir in horizontal split
     |lsbuffer_h|           h           go to parent dir
     |lsbuffer_r|           r           reload
+    |lsbuffer_o|           o           open with
     |lsbuffer_d|           d           delete files and dirs
     |lsbuffer_aa|          aa          autochdir: |:cd|
     |lsbuffer_at|          at          autochdir: |:tcd|
@@ -253,6 +254,11 @@ h               Go to parent directory - equivalent to `:Cd ..` .
 
                                                                   *lsbuffer_r*
 r               Reevaluate directory listing and update lsbuffer.
+
+                                                                  *lsbuffer_o*
+o               Open file under cursor with external command. When `o` is
+                pressed, the user is issued an "open with: " prompt with shell
+                command completion. If empty, use `xdg-open` .
 
                                                                   *lsbuffer_d*
                                                                 *lsbuffer_v_d*
